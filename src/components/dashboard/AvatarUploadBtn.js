@@ -4,7 +4,7 @@ import { storage, database } from '../../misc/firebase'; // Import the firebase 
 // import DisplayProfile from './DisplayProfile';
 import { useProfile } from '../../context/profile.context';
 import AvatarEditor from 'react-avatar-editor';
-import { useModelState } from '../../misc/custom-hooks';
+import { useModalState } from '../../misc/custom-hooks';
 import ProfileAvatar from '../ProfileAvatar';
 
 const fileInputTypes = '.png, .jpeg, .jpg';
@@ -25,7 +25,7 @@ const getBlob = canvas => {
 };
 
 const AvatarUploadBtn = () => {
-  const { isOpen, open, close } = useModelState();
+  const { isOpen, open, close } = useModalState();
 
   const { profile } = useProfile();
   const [img, setImg] = useState(null);
