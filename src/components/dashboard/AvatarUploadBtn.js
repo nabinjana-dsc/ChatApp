@@ -5,6 +5,7 @@ import { storage, database } from '../../misc/firebase'; // Import the firebase 
 import { useProfile } from '../../context/profile.context';
 import AvatarEditor from 'react-avatar-editor';
 import { useModelState } from '../../misc/custom-hooks';
+import ProfileAvatar from '../ProfileAvatar';
 
 const fileInputTypes = '.png, .jpeg, .jpg';
 
@@ -78,11 +79,11 @@ const AvatarUploadBtn = () => {
 
   return (
     <div className="mt-3 text-center">
-      {/* <DisplayProfile
+      <ProfileAvatar
         src={profile.avatar}
         name={profile.name}
         className="width-200 height-200 img-fullsize font-huge"
-      /> */}
+      />
       <div>
         <label
           htmlFor="avatar-upload"
@@ -143,14 +144,4 @@ const AvatarUploadBtn = () => {
 
 export default AvatarUploadBtn;
 
-// import { Avatar } from 'rsuite';
-// import { getNameInitials } from '../../misc/helper';
 
-// const DisplayProfile = ({  name, ...avatarProps }) => {
-//   return  <Avatar circle {...avatarProps}>
-//     { getNameInitials(name)}
-//    </Avatar>
-
-// };
-
-// export default DisplayProfile;
