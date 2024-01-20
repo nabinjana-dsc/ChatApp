@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button, Modal, Alert } from 'rsuite';
-import { storage, auth } from '../../misc/firebase'; // Import the firebase object
-import DisplayProfile from './DisplayProfile';
+import { storage, database } from '../../misc/firebase'; // Import the firebase object
+// import DisplayProfile from './DisplayProfile';
 import { useProfile } from '../../context/profile.context';
 import AvatarEditor from 'react-avatar-editor';
 import { useModelState } from '../../misc/custom-hooks';
@@ -9,17 +9,27 @@ import { useModelState } from '../../misc/custom-hooks';
 const fileInputTypes = '.png, .jpeg, .jpg';
 
 const acceptedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+const isValidFile = file => acceptedFileTypes.includes(file.type);
 
-const isValidFile = file => {
-  return acceptedFileTypes.includes(file.type);
+const getBlob = canvas => {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (blob) {
+        resolve(blob);
+      } else {
+        reject(new Error('File process error'));
+      }
+    });
+  });
 };
 
 const AvatarUploadBtn = () => {
   const { isOpen, open, close } = useModelState();
 
   const { profile } = useProfile();
-
   const [img, setImg] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const avatarEditorRef = useRef();
 
   const onFileInputChange = ev => {
     const currFiles = ev.target.files;
@@ -35,54 +45,44 @@ const AvatarUploadBtn = () => {
   };
 
   const onUploadClick = async () => {
-    if (img) {
-      try {
-        const storageRef = storage.ref();
-        const fileRef = storageRef.child(`avatars/${auth.currentUser.uid}`);
+    const canvas = avatarEditorRef.current.getImageScaledToCanvas();
 
-        const uploadTask = fileRef.put(img);
+    setIsLoading(true);
+    try {
+      const blob = await getBlob(canvas);
 
-        uploadTask.on(
-          'state_changed',
-          null,
-          error => {
-            console.error('Upload error:', error);
-            Alert.error('An error occurred while uploading avatar.', 4000);
-          },
-          async () => {
-            try {
-              const downloadURL =
-                await uploadTask.snapshot.ref.getDownloadURL();
+      const avatarFileRef = storage
+        .ref(`/profile/${profile.uid}`)
+        .child('avatar');
 
-              // Update the user's profile with the new avatar URL
-              await auth.currentUser.updateProfile({
-                photoURL: downloadURL,
-              });
 
-              Alert.success('Avatar uploaded successfully!', 4000);
-              close();
-            } catch (error) {
-              console.error('Download URL error:', error);
-              Alert.error('An error occurred while updating profile.', 4000);
-            }
-          }
-        );
-      } catch (error) {
-        console.error('Storage error:', error);
-        Alert.error('An error occurred while uploading avatar.', 4000);
-      }
-    } else {
-      Alert.warning('No image selected.', 4000);
+      const uploadAvatarResult = await avatarFileRef.put(blob, {
+        cacheControl: `public, max-age=${3600 * 24 * 3}`,
+      });
+
+      const downloadUrl = await uploadAvatarResult.ref.getDownloadURL();
+
+      const userAvatarRef = database
+        .ref(`/profiles/${profile.uid}`)
+        .child('avatar');
+
+      userAvatarRef.set(downloadUrl);
+
+      setIsLoading(false);
+      Alert.info('Avatar uploaded successfully!', 4000);
+    } catch (err) {
+      setIsLoading(false);
+      Alert.error(err.message, 4000);
     }
   };
 
   return (
     <div className="mt-3 text-center">
-      <DisplayProfile
+      {/* <DisplayProfile
         src={profile.avatar}
         name={profile.name}
         className="width-200 height-200 img-fullsize font-huge"
-      />
+      /> */}
       <div>
         <label
           htmlFor="avatar-upload"
@@ -106,6 +106,7 @@ const AvatarUploadBtn = () => {
             <div className="d-flex justify-content-center align-items-center h-100">
               {img && (
                 <AvatarEditor
+                  ref={avatarEditorRef}
                   image={img}
                   width={200}
                   height={200}
@@ -125,7 +126,12 @@ const AvatarUploadBtn = () => {
             <Button block appearance="primary" onClick={close}>
               Cancel
             </Button>
-            <Button block appearance="ghost" onClick={onUploadClick}>
+            <Button
+              block
+              appearance="ghost"
+              onClick={onUploadClick}
+              disabled={isLoading}
+            >
               Upload new avatar
             </Button>
           </Modal.Footer>
@@ -136,3 +142,15 @@ const AvatarUploadBtn = () => {
 };
 
 export default AvatarUploadBtn;
+
+// import { Avatar } from 'rsuite';
+// import { getNameInitials } from '../../misc/helper';
+
+// const DisplayProfile = ({  name, ...avatarProps }) => {
+//   return  <Avatar circle {...avatarProps}>
+//     { getNameInitials(name)}
+//    </Avatar>
+
+// };
+
+// export default DisplayProfile;
