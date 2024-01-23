@@ -6,6 +6,7 @@ import { useProfile } from '../../context/profile.context';
 import AvatarEditor from 'react-avatar-editor';
 import { useModalState } from '../../misc/custom-hooks';
 import ProfileAvatar from '../ProfileAvatar';
+import { getUserUpdates } from '../../misc/helpers';
 
 const fileInputTypes = '.png, .jpeg, .jpg';
 
@@ -56,18 +57,20 @@ const AvatarUploadBtn = () => {
         .ref(`/profile/${profile.uid}`)
         .child('avatar');
 
-
       const uploadAvatarResult = await avatarFileRef.put(blob, {
         cacheControl: `public, max-age=${3600 * 24 * 3}`,
       });
 
       const downloadUrl = await uploadAvatarResult.ref.getDownloadURL();
 
-      const userAvatarRef = database
-        .ref(`/profiles/${profile.uid}`)
-        .child('avatar');
+      const updates = await getUserUpdates(
+        profile.uid,
+        'avatar',
+        downloadUrl,
+        database
+      );
 
-      userAvatarRef.set(downloadUrl);
+      await database.ref().update(updates);
 
       setIsLoading(false);
       Alert.info('Avatar uploaded successfully!', 4000);
@@ -143,5 +146,3 @@ const AvatarUploadBtn = () => {
 };
 
 export default AvatarUploadBtn;
-
-
