@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useMediaQuery } from '../../../misc/custom-hooks';
 import { useCurrentRoom } from '../../../context/current-room.context';
 import RoomInfoBtnModel from './RoomInfoBtnModel';
+import EditRoomBtnDrawer from './EditRoomBtnDrawer';
 
 const Top = () => {
   const name = useCurrentRoom(v => v.name);
@@ -33,6 +34,7 @@ const Top = () => {
       <div className="d-flex justify-content-between align-items-center">
         <span>todo</span>
         <RoomInfoBtnModel />
+        <EditRoomBtnDrawer />
       </div>
     </div>
   );
