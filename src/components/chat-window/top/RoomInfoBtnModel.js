@@ -9,7 +9,7 @@ const RoomInfoBtnModel = () => {
   const name = useCurrentRoom(v => v.name);
 
   return (
-    <div>
+    <>
       <Button appearance="link" className="px-0" onClick={open}>
         Room information
       </Button>
@@ -18,7 +18,7 @@ const RoomInfoBtnModel = () => {
           <Modal.Title>About {name}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <h6 className="mb-1">description</h6>
+          <h6 className="mb-1">Description</h6>
           <p>{description}</p>
         </Modal.Body>
         <Modal.Footer>
@@ -27,7 +27,7 @@ const RoomInfoBtnModel = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-    </div>
+    </>
   );
 };
 

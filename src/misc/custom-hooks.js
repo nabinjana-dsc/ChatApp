@@ -29,7 +29,7 @@ export const useMediaQuery = query => {
 };
 
 export function usePresence(uid) {
-  const [presence, setPresence] = useState(false);
+  const [presence, setPresence] = useState(null);
 
   useEffect(() => {
     const userStatusRef = database.ref(`/status/${uid}`);
