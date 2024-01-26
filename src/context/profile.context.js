@@ -1,6 +1,6 @@
-import { createContext, useState, useContext, useEffect } from 'react';
-import { auth, database } from '../misc/firebase';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import firebase from 'firebase/app';
+import { auth, database } from '../misc/firebase';
 
 export const isOfflineForDatabase = {
   state: 'offline',
@@ -20,7 +20,6 @@ export const ProfileProvider = ({ children }) => {
 
   useEffect(() => {
     let userRef;
-
     let userStatusRef;
 
     const authUnsub = auth.onAuthStateChanged(authObj => {
@@ -70,6 +69,7 @@ export const ProfileProvider = ({ children }) => {
         setIsLoading(false);
       }
     });
+
     return () => {
       authUnsub();
 
