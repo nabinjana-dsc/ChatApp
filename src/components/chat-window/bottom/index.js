@@ -5,6 +5,7 @@ import { useParams } from 'react-router';
 import { useProfile } from '../../../context/profile.context';
 import { database } from '../../../misc/firebase';
 import AttachmentBtnModal from './AttachmentBtnModal';
+import AudioMsgBtn from './AudioMsgBtn';
 
 function assembleMessage(profile, chatId) {
   return {
@@ -67,45 +68,44 @@ const Bottom = () => {
     }
   };
 
-  const afterUpload = useCallback(async(files) =>  {
-    setIsLoading(true);
+  const afterUpload = useCallback(
+    async files => {
+      setIsLoading(true);
 
-    const updates = {};
+      const updates = {};
 
-    files.forEach(file => {
+      files.forEach(file => {
+        const msgData = assembleMessage(profile, chatId);
+        msgData.file = file;
 
-      const msgData = assembleMessage(profile, chatId);
-      msgData.file = file;
-  
+        const messageId = database.ref('messages').push().key;
 
+        updates[`/messages/${messageId}`] = msgData;
+      });
 
-      const messageId = database.ref('messages').push().key;
+      const lastMsgId = Object.keys(updates).pop();
 
-      updates[`/messages/${messageId}`] = msgData;
-    })
+      updates[`/rooms/${chatId}/lastMessage`] = {
+        ...updates[lastMsgId],
+        msgId: lastMsgId,
+      };
 
-    const lastMsgId = Object.keys(updates).pop();
-
-    updates[`/rooms/${chatId}/lastMessage`] = {
-      ...updates[lastMsgId],
-      msgId: lastMsgId,
-    };
-
-    try {
-      await database.ref().update(updates);
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      Alert.error(error.message);
-    } 
-
-  }, [chatId, profile])
+      try {
+        await database.ref().update(updates);
+        setIsLoading(false);
+      } catch (error) {
+        setIsLoading(false);
+        Alert.error(error.message);
+      }
+    },
+    [chatId, profile]
+  );
 
   return (
     <div>
       <InputGroup>
-
-      <AttachmentBtnModal afterUpload={afterUpload} />
+        <AttachmentBtnModal afterUpload={afterUpload} />
+        <AudioMsgBtn afterUpload={afterUpload} />
         <Input
           placeholder="Write a new message here..."
           value={input}
