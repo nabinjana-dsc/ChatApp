@@ -14,7 +14,7 @@
     "react-mic": "^12.4.6",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
     "rsuite": "^4.11.1",
     "timeago-react": "^3.0.6",
     "use-context-selector": "^1.4.1",
