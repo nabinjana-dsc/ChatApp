@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useCallback } from 'react';
+/* eslint-disable consistent-return */
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router';
 import { Alert } from 'rsuite';
-import { auth, database } from '../../../misc/firebase';
+import { database, auth, storage } from '../../../misc/firebase';
 import { transformToArrWithId } from '../../../misc/helpers';
 import MessageItem from './MessageItem';
 
@@ -56,7 +57,6 @@ const Messages = () => {
 
   const handleLike = useCallback(async msgId => {
     const { uid } = auth.currentUser;
-
     const messageRef = database.ref(`/messages/${msgId}`);
 
     let alertMsg;
@@ -86,19 +86,22 @@ const Messages = () => {
   }, []);
 
   const handleDelete = useCallback(
-    async msgId => {
+    async (msgId, file) => {
+      // eslint-disable-next-line no-alert
       if (!window.confirm('Delete this message?')) {
         return;
       }
 
       const isLast = messages[messages.length - 1].id === msgId;
+
       const updates = {};
 
       updates[`/messages/${msgId}`] = null;
 
       if (isLast && messages.length > 1) {
         updates[`/rooms/${chatId}/lastMessage`] = {
-          ...messages[messages.length - 2].id,
+          ...messages[messages.length - 2],
+          msgId: messages[messages.length - 2].id,
         };
       }
 
@@ -111,7 +114,16 @@ const Messages = () => {
 
         Alert.info('Message has been deleted');
       } catch (err) {
-        Alert.error(err.message);
+        return Alert.error(err.message);
+      }
+
+      if (file) {
+        try {
+          const fileRef = storage.refFromURL(file.url);
+          await fileRef.delete();
+        } catch (err) {
+          Alert.error(err.message);
+        }
       }
     },
     [chatId, messages]
