@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'react-router';
 import { Alert, Button } from 'rsuite';
 import { database, auth, storage } from '../../../misc/firebase';
-import { groupBy, transformToArrWithId } from '../../../misc/helpers';
+import { transformToArrWithId, groupBy } from '../../../misc/helpers';
 import MessageItem from './MessageItem';
 
 const PAGE_SIZE = 15;
@@ -25,42 +25,46 @@ const Messages = () => {
   const isChatEmpty = messages && messages.length === 0;
   const canShowMessages = messages && messages.length > 0;
 
-  const loadMessages = useCallback((limitToLast) => {
-    const node = selfRef.current;
-    messagesRef.off();
+  const loadMessages = useCallback(
+    limitToLast => {
+      const node = selfRef.current;
 
-    messagesRef
-      .orderByChild('roomId')
-      .equalTo(chatId)
-      .limitToLast(limitToLast || PAGE_SIZE)
-      .on('value', snap => {
-        const data = transformToArrWithId(snap.val());
-        setMessages(data);
+      messagesRef.off();
 
-        if (shouldScrollToBottom(node)) {
-          node.scrollTop = node.scrollHeight;
-        }
-      });
+      messagesRef
+        .orderByChild('roomId')
+        .equalTo(chatId)
+        .limitToLast(limitToLast || PAGE_SIZE)
+        .on('value', snap => {
+          const data = transformToArrWithId(snap.val());
+          setMessages(data);
 
-      setLimit(p => p + PAGE_SIZE)
-  }, [chatId]);
+          if (shouldScrollToBottom(node)) {
+            node.scrollTop = node.scrollHeight;
+          }
+        });
 
+      setLimit(p => p + PAGE_SIZE);
+    },
+    [chatId]
+  );
 
   const onLoadMore = useCallback(() => {
     const node = selfRef.current;
     const oldHeight = node.scrollHeight;
 
-    loadMessages(limit)
+    loadMessages(limit);
+
     setTimeout(() => {
       const newHeight = node.scrollHeight;
       node.scrollTop = newHeight - oldHeight;
     }, 200);
-  }, [loadMessages, limit])
+  }, [loadMessages, limit]);
 
   useEffect(() => {
     const node = selfRef.current;
 
-    loadMessages()
+    loadMessages();
 
     setTimeout(() => {
       node.scrollTop = node.scrollHeight;
@@ -201,14 +205,14 @@ const Messages = () => {
   };
 
   return (
-    <ul className="msg-list custom-scroll">
-    {messages && messages.length >= PAGE_SIZE && (
+    <ul ref={selfRef} className="msg-list custom-scroll">
+      {messages && messages.length >= PAGE_SIZE && (
         <li className="text-center mt-2 mb-2">
           <Button onClick={onLoadMore} color="green">
             Load more
           </Button>
         </li>
-    )}
+      )}
       {isChatEmpty && <li>No messages yet</li>}
       {canShowMessages && renderMessages()}
     </ul>
