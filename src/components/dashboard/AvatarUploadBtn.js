@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useRef } from 'react';
 import { Button, Modal, Alert } from 'rsuite';
 import { storage, database } from '../../misc/firebase'; // Import the firebase object

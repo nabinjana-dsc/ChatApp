@@ -1,3 +1,4 @@
+import React from 'react';
 import { useCallback, useState } from 'react';
 import { Alert, Icon, Input, InputGroup } from 'rsuite';
 
@@ -7,7 +8,7 @@ const EditableInput = ({
   label = null,
   placeholder = 'Write your value ',
   emptyMsg = 'Input is Empty',
-  wrapperClassName = "",
+  wrapperClassName = '',
 
   ...inputProps
 }) => {
