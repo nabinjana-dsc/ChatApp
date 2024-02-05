@@ -1,3 +1,5 @@
+![Screenshot 2024-01-28 175335](https://github.com/nabinjana-dsc/ChatApp/assets/120771456/37f4625f-206e-463e-b2fb-cb765de5610f)
+
 ## Important Links
 
 ### ` Rsuite v4`
